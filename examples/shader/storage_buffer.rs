@@ -13,7 +13,7 @@ fn main() {
     App::new()
         .add_plugins((DefaultPlugins, MaterialPlugin::<CustomMaterial>::default()))
         .add_systems(Startup, setup)
-        .add_systems(Update, update)
+        .add_systems(Update, (update, update_material))
         .run();
 }
 
@@ -68,10 +68,10 @@ fn setup(
 fn update(
     time: Res<Time>,
     material_handles: Res<CustomMaterialHandle>,
-    mut materials: ResMut<Assets<CustomMaterial>>,
+    materials: Res<Assets<CustomMaterial>>,
     mut buffers: ResMut<Assets<ShaderStorageBuffer>>,
 ) {
-    let material = materials.get_mut(&material_handles.0).unwrap();
+    let material = materials.get(&material_handles.0).unwrap();
 
     let buffer = buffers.get_mut(&material.colors).unwrap();
     buffer.set_data(
@@ -87,6 +87,13 @@ fn update(
             })
             .collect::<Vec<[f32; 4]>>(),
     );
+}
+fn update_material(
+    material_handles: Res<CustomMaterialHandle>,
+    mut materials: ResMut<Assets<CustomMaterial>>,
+) {
+    let material = materials.get_mut(&material_handles.0).unwrap();
+    info!("{:?}", material);
 }
 
 // Holds handles to the custom materials
